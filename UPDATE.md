@@ -118,6 +118,10 @@
 #### 🐛 Fixed
 - Resolved issue with `.webp` images not being displayed
 
+### v3.6.15
+#### 🐛 Fixed
+- Resolved issue with plain paths not working for video files (`.mp4`, `.mov`)
+
 <a href="https://www.youtube.com/watch?v=pJFsMfrWak4">
   <img src="https://pixel-banner.online/img/pixel-banner-transparent-bg.png" alt="Pixel Banner" style="max-width: 400px;">
 </a>
