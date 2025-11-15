@@ -886,8 +886,8 @@ async function updateBanner(plugin, view, isContentChange, updateMode = plugin.U
         // Flatten the bannerImage if it's an array within an array
         if (Array.isArray(bannerImage)) {
             bannerImage = bannerImage.flat()[0];
-            // Only format as internal link if it's not already formatted
-            if (bannerImage && !bannerImage.startsWith('[[') && !bannerImage.startsWith('![[')) {
+            // Only format as internal link if it's not already formatted and it's a string
+            if (bannerImage && typeof bannerImage === 'string' && !bannerImage.startsWith('[[') && !bannerImage.startsWith('![[')) {
                 bannerImage = `[[${bannerImage}]]`;
             }
         }
@@ -917,7 +917,7 @@ async function updateBanner(plugin, view, isContentChange, updateMode = plugin.U
         }
 
         // Format internal links
-        if (bannerImage && !bannerImage.startsWith('[[') && !bannerImage.startsWith('![[') && !bannerImage.startsWith('http')) {
+        if (bannerImage && typeof bannerImage === 'string' && !bannerImage.startsWith('[[') && !bannerImage.startsWith('![[') && !bannerImage.startsWith('http')) {
             const file = plugin.app.vault.getAbstractFileByPath(bannerImage);
             if (file && 'extension' in file) {
                 if (file.extension.match(/^(jpg|jpeg|png|gif|bmp|svg)$/i)) {
