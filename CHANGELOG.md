@@ -2,6 +2,10 @@
 
 All notable changes to the Pixel Banner plugin will be documented in this file.
 
+### v3.6.16 - 2025-11-15
+#### 🐛 Fixed
+- Fixed an occasional error that could prevent banners from displaying correctly
+
 ### v3.6.15 - 2025-10-14
 #### 🐛 Fixed
 - Resolved issue with plain paths not working for video files (`.mp4`, `.mov`)

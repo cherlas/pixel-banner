@@ -122,6 +122,10 @@
 #### 🐛 Fixed
 - Resolved issue with plain paths not working for video files (`.mp4`, `.mov`)
 
+### v3.6.16
+#### 🐛 Fixed
+- Fixed an occasional error that could prevent banners from displaying correctly
+
 <a href="https://www.youtube.com/watch?v=pJFsMfrWak4">
   <img src="https://pixel-banner.online/img/pixel-banner-transparent-bg.png" alt="Pixel Banner" style="max-width: 400px;">
 </a>
