@@ -909,36 +909,146 @@ describe('Banner Workflow Integration Tests', () => {
         it('should update banners across multiple views of same file', async () => {
             vi.spyOn(plugin, 'loadData').mockResolvedValue({});
             await plugin.onload();
-            
+
             // Create second view of same file
             const mockView2 = new MarkdownView();
             mockView2.file = mockFile;
             mockView2.contentEl = createBannerContainer();
             const mockLeaf2 = { id: 'test-leaf-id-2', view: mockView2 };
-            
+
             // Mock workspace to return both leaves
             mockApp.workspace.getLeavesOfType = vi.fn(() => [mockLeaf, mockLeaf2]);
-            
+
             const frontmatter = {
                 banner: 'https://example.com/banner.jpg'
             };
-            
+
             mockApp.metadataCache.getFileCache = vi.fn(() => ({ frontmatter }));
-            
+
             // Simulate frontmatter change
             const changeHandler = mockApp.metadataCache.on.mock.calls.find(
                 call => call[0] === 'changed'
             )?.[1];
-            
+
             const updateBannerSpy = vi.spyOn(plugin, 'updateBanner').mockResolvedValue();
-            
+
             if (changeHandler) {
                 await changeHandler(mockFile);
-                
+
                 // Both views should be updated
                 expect(updateBannerSpy).toHaveBeenCalledWith(mockView, true);
                 expect(updateBannerSpy).toHaveBeenCalledWith(mockView2, true);
             }
+        });
+    });
+
+    describe('Array and Non-String bannerImage Handling', () => {
+        it('should handle array bannerImage without throwing startsWith error', async () => {
+            vi.spyOn(plugin, 'loadData').mockResolvedValue({});
+            await plugin.onload();
+
+            const { testFile, testView } = createTestView('array-banner-test');
+
+            // Mock frontmatter with array value
+            const frontmatter = {
+                banner: ['image.jpg']
+            };
+
+            mockApp.metadataCache.getFileCache = vi.fn(() => ({ frontmatter }));
+
+            // Mock vault to find the file
+            mockApp.vault.getAbstractFileByPath = vi.fn((path) => {
+                if (path === 'image.jpg') {
+                    return { extension: 'jpg', path: 'image.jpg' };
+                }
+                return null;
+            });
+
+            const getImageUrlSpy = vi.spyOn(plugin, 'getImageUrl').mockResolvedValue('app://vault/image.jpg');
+
+            // This should not throw an error
+            await expect(async () => {
+                const updatePromise = plugin.updateBanner(testView, false, plugin.UPDATE_MODE.FULL_UPDATE);
+                await vi.advanceTimersByTimeAsync(300);
+                await updatePromise;
+            }).not.toThrow();
+        });
+
+        it('should handle empty array bannerImage gracefully', async () => {
+            vi.spyOn(plugin, 'loadData').mockResolvedValue({});
+            await plugin.onload();
+
+            const { testFile, testView } = createTestView('empty-array-banner-test');
+
+            // Mock frontmatter with empty array
+            const frontmatter = {
+                banner: []
+            };
+
+            mockApp.metadataCache.getFileCache = vi.fn(() => ({ frontmatter }));
+
+            // This should not throw an error
+            await expect(async () => {
+                const updatePromise = plugin.updateBanner(testView, false, plugin.UPDATE_MODE.FULL_UPDATE);
+                await vi.advanceTimersByTimeAsync(300);
+                await updatePromise;
+            }).not.toThrow();
+
+            // Banner should not be displayed
+            const banner = testView.contentEl.querySelector('.pixel-banner-image');
+            expect(banner?.style.display).toBeFalsy();
+        });
+
+        it('should handle nested array bannerImage without throwing error', async () => {
+            vi.spyOn(plugin, 'loadData').mockResolvedValue({});
+            await plugin.onload();
+
+            const { testFile, testView } = createTestView('nested-array-banner-test');
+
+            // Mock frontmatter with nested array (can happen with some YAML parsers)
+            const frontmatter = {
+                banner: [['image.jpg']]
+            };
+
+            mockApp.metadataCache.getFileCache = vi.fn(() => ({ frontmatter }));
+
+            // Mock vault to find the file
+            mockApp.vault.getAbstractFileByPath = vi.fn((path) => {
+                if (path === 'image.jpg') {
+                    return { extension: 'jpg', path: 'image.jpg' };
+                }
+                return null;
+            });
+
+            const getImageUrlSpy = vi.spyOn(plugin, 'getImageUrl').mockResolvedValue('app://vault/image.jpg');
+
+            // This should not throw an error
+            await expect(async () => {
+                const updatePromise = plugin.updateBanner(testView, false, plugin.UPDATE_MODE.FULL_UPDATE);
+                await vi.advanceTimersByTimeAsync(300);
+                await updatePromise;
+            }).not.toThrow();
+        });
+
+        it('should handle non-string values in array without throwing error', async () => {
+            vi.spyOn(plugin, 'loadData').mockResolvedValue({});
+            await plugin.onload();
+
+            const { testFile, testView } = createTestView('non-string-array-banner-test');
+
+            // Mock frontmatter with non-string values (edge case)
+            const frontmatter = {
+                banner: [null]
+            };
+
+            mockApp.metadataCache.getFileCache = vi.fn(() => ({ frontmatter }));
+
+            // This should not throw an error even with null in array
+            await expect(async () => {
+                const updatePromise = plugin.updateBanner(testView, false, plugin.UPDATE_MODE.FULL_UPDATE);
+                await vi.advanceTimersByTimeAsync(300);
+                await updatePromise;
+            }).not.toThrow();
         });
     });
 });
